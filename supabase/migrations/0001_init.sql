@@ -6,6 +6,19 @@
 -- Metadata (title/url/username/tags) is plaintext-in-row for instant search,
 -- protected by RLS + at-rest disk encryption.
 
+-- ---------------------------------------------------------- dev teardown ---
+-- Makes this script safe to re-run while iterating: drops the vault's own
+-- objects if a previous (possibly partial) run left them behind. Table drops
+-- cascade to their policies, triggers, and indexes. Safe ONLY because there is
+-- no production data yet — REMOVE this block before real deployments.
+drop trigger if exists on_auth_user_created on auth.users;
+drop function if exists public.handle_new_user() cascade;
+drop table if exists
+  notifications, audit_logs, one_time_links, secret_tags, tags,
+  secret_shares, secret_values, secrets, folders, team_members, teams, profiles
+  cascade;
+drop type if exists secret_type, permission_level, team_role, app_role cascade;
+
 -- ------------------------------------------------------------------ enums ---
 create type app_role       as enum ('user', 'admin');
 create type team_role       as enum ('owner', 'member');
